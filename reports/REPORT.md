@@ -1,19 +1,17 @@
-# [Project Title]
-> *One sentence. What did you analyze, build, or solve - and why does it matter?*
+# Crypto Market Dashboard Pipeline
+> *An automated ETL pipeline extracting live crypto data, transforming it with Polars, and storing it in DuckDB.*
 
 ---
 
 ## ⚙️ Project Type Flags
-> *Check what applies. This helps reviewers and collaborators understand the nature of the work at a glance. Delete this block before publishing.*
 
+- [x] Data Pipeline / ETL
 - [ ] Exploratory Data Analysis (EDA)
 - [ ] SQL Analysis / Querying
 - [ ] Dashboard / Data Visualization
-- [ ] Data Pipeline / ETL
 - [ ] Predictive Modelling / Machine Learning
 - [ ] Data Cleaning / Wrangling
 - [ ] End-to-End (multiple of the above)
-- [ ] Other: ___________
 
 ---
 
@@ -29,12 +27,7 @@
   - [4. Repository Structure](#4-repository-structure)
   - [5. Data Workflow](#5-data-workflow)
   - [6. Data Model \& Schema](#6-data-model--schema)
-    - [Dataset / Table: `[name]`](#dataset--table-name)
-  - [7. ERD - Entity Relationship Diagram](#7-erd---entity-relationship-diagram)
-    - [*(Primarily for SQL Projects - remove this section if not applicable)*](#primarily-for-sql-projects---remove-this-section-if-not-applicable)
-    - [Option A - Embedded Image](#option-a---embedded-image)
-    - [Option B - dbdiagram.io Schema Definition](#option-b---dbdiagramio-schema-definition)
-    - [Option C - Mermaid Diagram *(renders on GitHub)*](#option-c---mermaid-diagram-renders-on-github)
+    - [Dataset / Table: `coins`](#dataset--table-coins)
   - [8. Analysis \& Metrics](#8-analysis--metrics)
     - [Analytical Approach](#analytical-approach)
     - [Key Metrics Defined](#key-metrics-defined)
@@ -52,57 +45,21 @@
 
 ## 1. Project Overview
 
-<!--
-  Write 3–5 sentences in plain language.
-  Cover: context → problem → approach → outcome.
-  Read it out loud. If it sounds like a form - rewrite it.
+**Context:** A cryptocurrency market dashboard requires fresh, queryable data on top coins to provide accurate market snapshots to users.
 
-  WHAT GOOD LOOKS LIKE:
-  "A mid-size retail business was seeing inconsistent revenue across
-  its regional stores but couldn't identify the root cause. This project
-  explored 18 months of transaction data across five regions to determine
-  whether underperformance was driven by sales volume, pricing, or return
-  rates. The analysis revealed that one region's gap was almost entirely
-  explained by an unusually high return rate on a single product category -
-  a finding invisible in the company's top-level reporting."
+**Problem Statement:** Fetching, cleaning, and storing this data manually is inefficient and doesn't scale for an always-on dashboard. There needed to be an automated process to handle this workflow seamlessly.
 
-  WHAT TO AVOID:
-  "This project analyzes sales data to find trends and insights."
-  (Too vague. Could describe 10,000 projects. Describes none of them.)
--->
+**Approach:** Developed an automated ETL pipeline using Python. It extracts top 10 coin data from the CoinGecko API, transforms it via Polars (filtering zero market caps and calculating price ranges), and loads it into a DuckDB instance, scheduled to run every hour.
 
-**Context:** [The business, research, or personal situation that motivated this project.]
-
-**Problem Statement:** [The specific question or challenge you were addressing.]
-
-**Approach:** [In 1–2 sentences - how did you tackle it?]
-
-**Outcome:** [What did you produce or discover?]
+**Outcome:** A robust, scheduled data pipeline that reliably updates a local `crypto.db` database with the latest top cryptocurrency market metrics, ready for downstream analysis.
 
 ---
 
 ## 2. Objectives
 
-<!--
-  Write objectives that are specific enough to succeed or fail.
-  Use action-oriented verbs: Identify, Determine, Quantify, Build, Evaluate.
-
-  WHAT GOOD LOOKS LIKE:
-  ✅ "Determine whether customer churn rate correlates with support ticket volume."
-  ✅ "Identify the top three revenue-driving product categories across all regions."
-  ✅ "Build a reproducible pipeline that ingests and cleans daily sales exports."
-
-  WHAT TO AVOID:
-  ❌ "Explore the data."
-  ❌ "Gain insights."
-  ❌ "Understand trends."
-  (These can't fail - which means they can't succeed either.)
--->
-
-- **Primary Objective:** [The main thing you set out to do]
-- **Secondary Objective 1:** [Supporting goal]
-- **Secondary Objective 2:** [Supporting goal]
-- **Secondary Objective 3:** [Remove if not applicable]
+- **Primary Objective:** Build a reproducible, scheduled ETL pipeline that ingests live cryptocurrency market data.
+- **Secondary Objective 1:** Efficiently clean and transform the JSON payload using the high-performance Polars library.
+- **Secondary Objective 2:** Store the processed data in a lightweight DuckDB database to serve as an analytical backend.
 
 > 💡 *Every analysis decision in this project traces back to one of these objectives.*
 
@@ -112,407 +69,153 @@
 
 ### Scope
 
-<!--
-  WHAT GOOD LOOKS LIKE:
-  In Scope: "Transaction-level data for Regions A–E, Jan 2023–Jun 2024.
-             Analysis covers revenue, return rates, and product category performance."
-  Out of Scope: "Customer demographics and marketing spend data were excluded -
-                 demographic data was incomplete for two regions, and marketing
-                 data sits in a separate system outside this engagement."
-
-  WHAT TO AVOID:
-  ❌ Leaving Out of Scope blank. This is the section that protects your credibility.
-     If you don't define the fence, reviewers assume you missed things.
--->
-
 | Dimension | Details |
 |-----------|---------|
-| **In Scope** | [What is included - data sources, time periods, segments] |
-| **Out of Scope** | [What you explicitly excluded - and a brief reason why] |
-| **Time Period** | [Date range of the data or the project itself] |
-| **Granularity** | [Unit of analysis - row-level, daily aggregates, per-user, etc.] |
+| **In Scope** | Extracting current market data for the top 10 cryptocurrencies (by USD market cap) from CoinGecko, transforming the dataset, and storing it locally. |
+| **Out of Scope** | Dashboard UI creation and historical time-series storage (the database table is overwritten hourly). |
+| **Time Period** | Live snapshot (updated hourly). |
+| **Granularity** | Coin-level aggregations (one row per cryptocurrency). |
 
 ### Tools & Technologies
 
-<!--
-  List only what you actually used on this project.
-  This is not your skills section - it's the project's technical context.
--->
-
 | Category | Tool(s) Used |
 |----------|-------------|
-| Data Storage | [e.g., PostgreSQL, CSV files, BigQuery, S3] |
-| Data Processing | [e.g., Python, R, SQL, Excel, dbt] |
-| Analysis | [e.g., pandas, dplyr, custom SQL queries] |
-| Visualization | [e.g., Matplotlib, Tableau, Power BI, Looker] |
-| Version Control | [e.g., Git / GitHub] |
-| Documentation | [e.g., Markdown, Notion] |
-| Other | [Any additional tools] |
+| Data Storage | DuckDB (`crypto.db`) |
+| Data Processing | Python, Polars |
+| Ingestion | `requests`, CoinGecko API |
+| Orchestration | `schedule` (Python library) |
+| Version Control | Git / GitHub |
+| Documentation | Markdown |
 
 ---
 
 ## 4. Repository Structure
 
-```
+```text
 [project-root]/
 │
-├── data/
-│   ├── raw/                  # Original, unmodified source data - never edited
-│   ├── processed/            # Cleaned and transformed data
-│   └── external/             # Reference data, lookup tables, third-party files
+├── scripts/                  # Reusable ETL processing files
+│   ├── extract.py            # API ingestion
+│   ├── transform.py          # Polars data cleaning
+│   ├── load.py               # DuckDB loading
+│   ├── main.py               # Pipeline orchestration
+│   ├── scheduler.py          # Hourly cron-like job
+│   ├── log.py                # Logging configuration
+│   └── verify.py             # DuckDB table verification
 │
-├── notebooks/                # Jupyter, R Markdown, or Colab notebooks
-│
-├── scripts/                  # Reusable .py, .R, or .sh processing files
-│
-├── queries/                  # SQL files (retain this folder for SQL-heavy projects)
-│   ├── exploratory/          # Ad-hoc or investigative queries
-│   ├── transformations/      # Cleaning and reshaping logic
-│   └── final/                # Production-ready or presentation queries
-│
-├── reports/                  # Final outputs: PDFs, slide decks, Word docs
-│
-├── visuals/                  # Exported charts, dashboard screenshots, ERD diagrams
-│
-├── docs/                     # Data dictionaries, schema notes, reference material
+├── reports/                  # Final outputs
+│   └── REPORT.md             # Full structured report
 │
 ├── pyproject.toml            # uv-managed dependencies
-└── README.md                 # Project one-pager (also a mini-report)
+├── README.md                 # Project one-pager
+└── crypto.db                 # Generated DuckDB database
 ```
-
-> ⚠️ *Delete folders you didn't use. An empty folder is worse than no folder.*
-> SQL-heavy projects: keep `queries/`. Analysis-only projects: keep `notebooks/`. Both? Keep both.
 
 ---
 
 ## 5. Data Workflow
 
-<!--
-  Show how data moved through your project - from source to output.
-  Every transformation decision should be traceable here.
-
-  WHAT GOOD LOOKS LIKE:
-  1. Source: "Monthly CSV exports pulled from the internal POS system.
-              Five files, one per region, covering Jan 2023–Jun 2024."
-  2. Ingestion: "Loaded into Python using pandas. Files concatenated into
-                 a single dataframe (approx. 340,000 rows)."
-  3. Cleaning: "Removed 1.2% of rows with null transaction IDs.
-                Standardised date formats across regional files.
-                Resolved product category naming inconsistencies (3 variants → 1)."
-  4. Transformation: "Created a returns_rate field at product-category level.
-                      Aggregated to weekly and regional grain for trend analysis."
-  5. Analysis: "Descriptive statistics, regional comparison, return rate
-                segmentation by product category."
-  6. Output: "Summary report (PDF), annotated notebook, processed CSV."
-
-  WHAT TO AVOID:
-  ❌ "Data was cleaned and analysed." (No chain. No decisions. No trust.)
--->
-
 ```mermaid
 flowchart TD
-    A["Data Source(s)"] --> B[Ingestion / Collection Method]
-    B --> C[Cleaning & Transformation]
-    C --> D[Analysis / Modelling / Querying]
-    D --> E[Output / Visualisation / Reporting]
+    A["CoinGecko API"] -->|requests.get| B[extract.py]
+    B -->|JSON list| C[transform.py]
+    C -->|pl.DataFrame| D[load.py]
+    D -->|DuckDB Connection| E[(crypto.db)]
+    F((scheduler.py)) -.->|Runs hourly| B
 ```
 
-1. **Source:** [Where did the data come from? Format, size, access method.]
-2. **Ingestion:** [How was it brought in?]
-3. **Cleaning:** [What issues did you find and fix?]
-4. **Transformation:** [What new fields, aggregations, or structures did you create?]
-5. **Analysis:** [What methods - statistical, visual, query-based, model-based?]
-6. **Output:** [What form do the results take?]
+1. **Source:** CoinGecko `/coins/markets` public API endpoint, parameterized for top 10 coins in USD.
+2. **Ingestion:** Fetched using the `requests` library in Python (`extract.py`).
+3. **Cleaning:** Cast to a Polars DataFrame. Filtered out any records with a market cap of 0. Selected 8 relevant columns (`transform.py`).
+4. **Transformation:** Calculated a new column `price_range_24h` by subtracting `low_24h` from `high_24h` (`transform.py`).
+5. **Analysis:** The resulting dataset is prepared for downstream analytical querying.
+6. **Output:** Loaded into DuckDB (`crypto.db`) via the `duckdb` library, replacing the `coins` table each run (`load.py`).
 
 ---
 
 ## 6. Data Model & Schema
 
-<!--
-  Define your fields so that someone reading your analysis can follow along
-  without digging through your code.
-
-  WHAT GOOD LOOKS LIKE (one row example):
-  | transaction_id | string | Unique identifier per sales transaction | TXN-00482 |
-  | return_flag    | boolean | Whether the transaction included a return | TRUE |
-  | region_code    | string | Two-letter identifier for store region | "NE" |
-
-  WHAT TO AVOID:
-  ❌ Skipping this section because "the field names are self-explanatory."
-     They're not. Not to a reviewer. Not to you in six months.
-
-  📌 FOR SQL PROJECTS: If you have multiple tables, create one block per table.
-     Describe join keys and relationships here. Your ERD (Section 7) will
-     visualise what this section describes in text.
-
-  📌 FOR NON-SQL PROJECTS: Describe the shape of your dataset informally
-     if a formal schema doesn't apply. Even one paragraph is more helpful than nothing.
--->
-
-### Dataset / Table: `[name]`
+### Dataset / Table: `coins`
 
 | Field Name | Data Type | Description | Example Value |
 |------------|-----------|-------------|---------------|
-| `[field_1]` | [string / int / date / float / boolean] | [What this field represents] | [Non-sensitive example] |
-| `[field_2]` | [string / int / date / float / boolean] | [What this field represents] | [Non-sensitive example] |
-| `[field_3]` | [string / int / date / float / boolean] | [What this field represents] | [Non-sensitive example] |
+| `id` | string | Unique identifier for the cryptocurrency | "bitcoin" |
+| `symbol` | string | Ticker symbol | "btc" |
+| `name` | string | Full name of the asset | "Bitcoin" |
+| `current_price` | float | Current trading price in USD | 64000.50 |
+| `market_cap` | float | Total market value in USD | 1200000000000.0 |
+| `total_volume` | float | 24-hour trading volume in USD | 35000000000.0 |
+| `high_24h` | float | Highest price in the last 24 hours | 65000.00 |
+| `low_24h` | float | Lowest price in the last 24 hours | 63000.00 |
+| `price_range_24h` | float | Derived: `high_24h` - `low_24h` | 2000.00 |
 
-> **Row count (approx.):** [X rows]
-> **Date range:** [Start] – [End]
-> **Key join / relationship:** [e.g., `orders.customer_id` → `customers.id`]
-
-*Add additional table blocks as needed for multi-table projects.*
-
----
-
-## 7. ERD - Entity Relationship Diagram
-### *(Primarily for SQL Projects - remove this section if not applicable)*
-
-<!--
-  An ERD shows how your tables connect to each other visually.
-  It is the fastest way for a reviewer to understand the data structure
-  of a SQL project without reading every query.
-
-  HOW TO INCLUDE YOUR ERD:
-  Option A - Image embed (most common):
-    Export your ERD from dbdiagram.io, DBeaver, Lucidchart, or similar.
-    Save to /visuals/erd.png and reference it below.
-
-  Option B - dbdiagram.io code block (version-controllable):
-    Paste your schema definition code directly in the fenced block below.
-    Anyone can paste it into dbdiagram.io to regenerate the visual.
-
-  Option C - Mermaid diagram (renders natively in GitHub):
-    Use the mermaid code block syntax below.
-    GitHub will render this as a diagram automatically.
-
-  PICK ONE. Don't use all three. Delete the options you don't use.
--->
-
-### Option A - Embedded Image
-![ERD Diagram](visuals/erd.png)
-*[Brief caption: e.g., "Three-table schema - orders, customers, and products joined on shared IDs."]*
-
----
-
-### Option B - dbdiagram.io Schema Definition
-```
-Table orders {
-  order_id    int     [pk]
-  customer_id int     [ref: > customers.customer_id]
-  product_id  int     [ref: > products.product_id]
-  order_date  date
-  amount      float
-}
-
-Table customers {
-  customer_id int  [pk]
-  region_code string
-  signup_date date
-}
-
-Table products {
-  product_id   int    [pk]
-  category     string
-  unit_price   float
-}
-```
-*Paste this into [dbdiagram.io](https://dbdiagram.io) to view the visual.*
-
----
-
-### Option C - Mermaid Diagram *(renders on GitHub)*
-```mermaid
-erDiagram
-    ORDERS {
-        int order_id PK
-        int customer_id FK
-        int product_id FK
-        date order_date
-        float amount
-    }
-    CUSTOMERS {
-        int customer_id PK
-        string region_code
-        date signup_date
-    }
-    PRODUCTS {
-        int product_id PK
-        string category
-        float unit_price
-    }
-    ORDERS ||--o{ CUSTOMERS : "placed by"
-    ORDERS ||--o{ PRODUCTS : "contains"
-```
-
----
-
-**Table Relationships Summary:**
-
-| Relationship | Join Key | Type |
-|-------------|----------|------|
-| `orders` → `customers` | `customer_id` | Many-to-One |
-| `orders` → `products` | `product_id` | Many-to-One |
-| [Add rows as needed] | | |
+> **Row count (approx.):** 10 rows
+> **Date range:** Current Snapshot
+> **Key join / relationship:** None (Single-table schema)
 
 ---
 
 ## 8. Analysis & Metrics
 
-<!--
-  Explain what you measured and how - before you share what you found.
-
-  WHAT GOOD LOOKS LIKE:
-  Metric: "Customer Return Rate"
-  Definition: "Number of transactions flagged as returns divided by total
-               transactions, calculated at product-category and regional grain."
-  Why It Matters: "Return rate - not sales volume - was hypothesised to
-                  explain regional revenue gaps. This metric tests that hypothesis."
-
-  WHAT TO AVOID:
-  ❌ Defining a metric only in code: SUM(returns) / COUNT(transaction_id)
-     That's an implementation. Write the plain-language definition here.
-     Both belong in your project - the definition in the README,
-     the implementation in the code.
--->
-
 ### Analytical Approach
 
-[Describe how you approached the analysis. Were you exploring patterns? Testing a hypothesis? Building and validating a pipeline? Be honest about your method - exploratory work is valid, just call it that.]
+This project focused on data engineering rather than pure statistical analysis. The goal was to build a reliable pipeline that cleans raw API data, enforces data quality (e.g., filtering 0 market cap coins), and engineers features useful for dashboard consumers (e.g., the 24-hour price range).
 
 ### Key Metrics Defined
 
 | Metric | Plain-Language Definition | Why It Matters |
 |--------|--------------------------|----------------|
-| `[Metric 1]` | [What it measures, in one sentence] | [What decision or question it answers] |
-| `[Metric 2]` | [What it measures, in one sentence] | [What decision or question it answers] |
-| `[Metric 3]` | [What it measures, in one sentence] | [What decision or question it answers] |
+| `price_range_24h` | The absolute difference between a coin's 24-hour high and low prices. | Indicates intra-day volatility, helping traders spot assets with high price fluctuations. |
 
 ### Methods Used
 
-- [e.g., Descriptive statistics - distribution, central tendency, outlier detection]
-- [e.g., Trend analysis across [time period]]
-- [e.g., Segmentation / group comparison by [dimension]]
-- [e.g., Correlation analysis between [variable A] and [variable B]]
-- [e.g., SQL window functions for [specific aggregation]]
-- [e.g., Custom aggregation or transformation logic in [tool]]
+- **Data Engineering:** API data extraction, error handling, and pipeline scheduling.
+- **Data Transformation:** Column selection, row filtering (market cap > 0), and derived column creation using Polars.
+- **Database Management:** In-memory to on-disk table creation using DuckDB.
 
 ---
 
 ## 9. Key Insights
 
-<!--
-  Findings + implications. Not just what happened - what it means.
+**Insight 1: Efficient Pipeline Architecture**
+By decoupling the extraction, transformation, and loading phases into separate modules, the pipeline is highly maintainable. Any changes to the API payload only require updates to `extract.py` and `transform.py`, without affecting the database logic.
 
-  WHAT GOOD LOOKS LIKE:
-  ✅ "Return rates, not sales volume, explain Region A's underperformance.
-      Region A's return rate on home goods was 34% - more than double the
-      company average. Revenue was not lost at the point of sale; it was
-      lost post-sale through refunds. This points to a fulfilment or
-      product quality issue specific to that region, not a demand problem."
+**Insight 2: Polars provides a clean API for transformations**
+Using Polars instead of pandas allowed for expressive and fast transformations, particularly the vectorised calculation of `price_range_24h` and straightforward column selection.
 
-  WHAT TO AVOID:
-  ❌ "Region A had lower revenue than other regions in Q4."
-     (That's an observation. It describes what happened.
-      An insight says what it means and where to look next.)
-
-  Aim for 3–6 insights. Quality over quantity.
--->
-
-**Insight 1: [Short descriptive headline]**
-[What you found + what it suggests. One short paragraph.]
-
-**Insight 2: [Short descriptive headline]**
-[What you found + what it suggests.]
-
-**Insight 3: [Short descriptive headline]**
-[What you found + what it suggests.]
-
-**Insight 4 (if applicable): [Short descriptive headline]**
-[What you found + what it suggests.]
+**Insight 3: DuckDB streamlines local analytical storage**
+Connecting directly to DuckDB and registering the Polars DataFrame natively (`conn.register("df", df)`) eliminates the need for intermediate CSV or Parquet files, reducing the footprint and potential points of failure in the pipeline.
 
 ---
 
 ## 10. Recommendations
 
-<!--
-  Action-oriented. Addressed to a real audience.
-  Tied explicitly to the insight that supports each one.
-
-  WHAT GOOD LOOKS LIKE:
-  Priority: High
-  Recommendation: "Conduct a fulfilment audit for home goods deliveries
-                   in Region A - specifically investigating whether returns
-                   correlate with a particular warehouse, carrier, or SKU batch."
-  Based On: Insight 1 - return rate anomaly in Region A
-  Owner: Operations / Supply Chain team
-
-  WHAT TO AVOID:
-  ❌ "Improve the return rate."
-     (Not actionable. Doesn't say who, how, or where to start.)
-  ❌ "Further analysis is needed."
-     (This is a placeholder, not a recommendation.)
--->
-
 | Priority | Recommendation | Based On | Suggested Owner |
 |----------|---------------|----------|-----------------|
-| High | [Specific, actionable step] | [Insight it comes from] | [Who should act] |
-| Medium | [Specific, actionable step] | [Insight it comes from] | [Who should act] |
-| Low | [Exploratory or longer-term suggestion] | [Insight it comes from] | [Who should act] |
+| High | Implement historical data tracking (e.g., appending with a timestamp rather than replacing the table). | Overwriting the table prevents time-series analysis. | Data Engineer |
+| Medium | Add retry logic and alerting to the API extraction phase. | The pipeline relies on a public API which can rate-limit or drop connections. | Data Engineer |
+| Low | Expand the API request to fetch top 100 or 500 coins, utilizing pagination if necessary. | Current limit of 10 restricts the scope of the dashboard. | Data Engineer |
 
 ---
 
 ## 11. Assumptions & Limitations
 
-<!--
-  WHAT GOOD LOOKS LIKE:
-  Assumption: "Transaction records were assumed to be complete for all five regions.
-               No validation was performed against source system record counts."
-  Limitation: "The analysis cannot distinguish between returns initiated by
-               the customer vs. returns initiated by the business (e.g., recalls).
-               If business-initiated returns are concentrated in Region A, the
-               return rate finding may reflect a policy decision, not a quality issue."
-
-  WHAT TO AVOID:
-  ❌ Leaving this section blank or writing "None known."
-     Every project has limitations. Documenting them is a sign of
-     analytical maturity - not a confession of failure.
--->
-
 ### Assumptions
-- [What did you treat as true without being able to verify?]
-- [What simplifications did you make for scope or feasibility?]
-- [What domain rules or definitions did you accept as given?]
+- The CoinGecko API's `/coins/markets` endpoint will maintain its current JSON structure.
+- A 1-hour update frequency is sufficient for the downstream dashboard requirements.
 
 ### Limitations
-- [What gaps exist in the data?]
-- [What analysis was out of scope but could affect interpretation?]
-- [What would a more rigorous version of this project include?]
-- [Are there known biases in the data source or collection method?]
-
-> *The goal here is pre-emptive Q&A. What would a thoughtful skeptic push back on? Document the answer here, before they ask.*
+- The pipeline utilizes a `CREATE OR REPLACE TABLE` pattern, meaning historical snapshots are lost after every hourly update.
+- The pipeline does not currently handle API rate limiting gracefully; if CoinGecko returns a 429 status code, the extraction step will throw an exception and fail the pipeline run.
 
 ---
 
 ## 12. Future Enhancements
 
-<!--
-  WHAT GOOD LOOKS LIKE:
-  ✅ "Automate the monthly data pull from the POS export folder using
-      a scheduled Python script, replacing the current manual process."
-  ✅ "Expand the return rate analysis to include carrier-level data,
-      which was unavailable in this dataset but exists in the logistics system."
-
-  WHAT TO AVOID:
-  ❌ "Add a machine learning model."
-     (Vague, and disconnected from the actual findings of this project.)
-  ❌ Listing aspirational features that don't follow logically from the work.
--->
-
-- [ ] [Enhancement 1 - specific and traceable to a real gap in this project]
-- [ ] [Enhancement 2]
-- [ ] [Enhancement 3]
-- [ ] [Enhancement 4]
+- [ ] Modify `load.py` to append records with an `extracted_at` timestamp to enable historical trend analysis.
+- [ ] Add `tenacity` or a custom retry decorator to `extract.py` to handle transient network errors.
+- [ ] Increase the `per_page` parameter or add pagination to capture the top 100 cryptocurrencies.
+- [ ] Implement a downstream dashboard tool (e.g., Streamlit) connecting directly to `crypto.db`.
 
 ---
 
@@ -520,9 +223,9 @@ erDiagram
 
 | Deliverable | Description | Location |
 |-------------|-------------|----------|
-| [Name] | [What it contains] | [`/path/to/file`] |
-| [Name] | [What it contains] | [`/path/to/file`] |
-| [Name] | [What it contains] | [`/path/to/file`] |
+| ETL Pipeline | Modular Python scripts for extracting, transforming, and loading data | `scripts/` |
+| Database | DuckDB database containing the `coins` table | `crypto.db` |
+| Job Scheduler | Script to run the pipeline repeatedly | `scripts/scheduler.py` |
 
 ---
 
@@ -532,4 +235,4 @@ erDiagram
 
 ---
 
-*Last updated: [Month YYYY]*
+*Last updated: 2026-05-06*

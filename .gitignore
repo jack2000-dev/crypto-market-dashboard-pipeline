@@ -6,7 +6,7 @@
 *.json
 *.xml
 data/raw/*
-data/processed/*
+# data/processed/* allowed for educational purposes (duckDB)
 data/external/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep

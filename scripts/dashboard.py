@@ -25,3 +25,5 @@ fig = px.line(
     title=f"{selected_coin} 7D Moving Average"
 )
 st.plotly_chart(fig)
+
+st.caption("Data source: [CoinGecko API](https://www.coingecko.com/en/api) · Updated hourly · For educational purposes only")

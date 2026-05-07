@@ -48,7 +48,9 @@ def transform_ohlc(ohlc: list) -> pl.DataFrame:
                     "close": close,
                 }
             )
-    df = pl.DataFrame(rows)
+    df = pl.DataFrame(rows).with_columns(
+        pl.col("timestamp").cast(pl.Datetime("ms")).alias("timestamp")
+    )
     # Moving average
     df = df.with_columns(
         [(pl.col("close").rolling_mean(window_size=7).over("id")).alias("ma_7d")]

@@ -1,5 +1,15 @@
 # Crypto Market Dashboard Pipeline
 
+> Disclaimer: This project is under experiment and for educational purposes.
+
+# Roadmap
+
+- [x] Boilerplate scaffolding with basic ETL from CoinGecko API
+- [x] Build a dashboard to visualize the data and deploy via Streamlit Cloud
+- [ ] Make a cloud-based database using MotherDuck or Supabase
+- [ ] Turn `scheduler.py` into GitHub Actions for pipeline CI/CD
+- [ ] Dynamic Moving Average selection for user (7D, 14D, 30D, etc.)
+
 > *An automated ETL pipeline that fetches top cryptocurrency metrics hourly, processes them with Polars, and stores them in DuckDB for dashboarding.*
 
 **Type:** `#Data Pipeline` `#ETL` | **Tools:** `#Python` `#Polars` `#DuckDB` | **Period:** `2026-05`
